@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	Addr             string
+	Hostname         string
 	ProcRoot         string
 	CgroupRoot       string
 	RootFSProbe      string
@@ -53,6 +54,7 @@ func Load() (Config, error) {
 
 	return Config{
 		Addr:             stringEnv("MONITOR_ADDR", "127.0.0.1:8080"),
+		Hostname:         strings.TrimSpace(os.Getenv("MONITOR_HOSTNAME")),
 		ProcRoot:         stringEnv("MONITOR_PROC_ROOT", "/proc"),
 		CgroupRoot:       stringEnv("MONITOR_CGROUP_ROOT", "/sys/fs/cgroup"),
 		RootFSProbe:      stringEnv("MONITOR_ROOTFS_PROBE", "/"),

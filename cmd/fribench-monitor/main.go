@@ -56,6 +56,7 @@ func run() error {
 		}
 	} else {
 		source = metrics.NewLinuxCollector(metrics.CollectorOptions{
+			Hostname:      cfg.Hostname,
 			ProcRoot:      cfg.ProcRoot,
 			CgroupRoot:    cfg.CgroupRoot,
 			RootFSProbe:   cfg.RootFSProbe,

@@ -10,9 +10,12 @@ func diskUsage(path string) (Disk, error) {
 		return Disk{}, err
 	}
 
-	total := stats.Blocks * uint64(stats.Bsize)
-	free := stats.Bavail * uint64(stats.Bsize)
-	used := total - free
+	total, used, available, usagePercent := calculateDiskUsage(
+		stats.Blocks,
+		stats.Bfree,
+		stats.Bavail,
+		uint64(stats.Bsize),
+	)
 	inodesTotal := stats.Files
 	inodesFree := stats.Ffree
 	inodesUsed := inodesTotal - inodesFree
@@ -20,8 +23,8 @@ func diskUsage(path string) (Disk, error) {
 	return Disk{
 		TotalBytes:    total,
 		UsedBytes:     used,
-		FreeBytes:     free,
-		UsagePercent:  percent(used, total),
+		FreeBytes:     available,
+		UsagePercent:  usagePercent,
 		InodesTotal:   inodesTotal,
 		InodesUsed:    inodesUsed,
 		InodesPercent: percent(inodesUsed, inodesTotal),

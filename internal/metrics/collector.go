@@ -22,6 +22,7 @@ type Source interface {
 }
 
 type CollectorOptions struct {
+	Hostname      string
 	ProcRoot      string
 	CgroupRoot    string
 	RootFSProbe   string
@@ -80,7 +81,10 @@ func (collector *LinuxCollector) Collect(ctx context.Context) (Snapshot, error) 
 
 	var criticalErrors []error
 
-	snapshot.Hostname, _ = readTrimmed(filepath.Join(collector.options.ProcRoot, "sys/kernel/hostname"))
+	snapshot.Hostname = collector.options.Hostname
+	if snapshot.Hostname == "" {
+		snapshot.Hostname, _ = readTrimmed(filepath.Join(collector.options.ProcRoot, "sys/kernel/hostname"))
+	}
 	snapshot.Kernel, _ = readTrimmed(filepath.Join(collector.options.ProcRoot, "sys/kernel/osrelease"))
 	snapshot.Uptime, _ = readUptime(filepath.Join(collector.options.ProcRoot, "uptime"))
 
@@ -110,7 +114,14 @@ func (collector *LinuxCollector) Collect(ctx context.Context) (Snapshot, error) 
 	}
 	snapshot.Disk.Pressure, _ = readPressure(filepath.Join(collector.options.ProcRoot, "pressure/io"))
 
-	currentNetwork, err := readNetwork(filepath.Join(collector.options.ProcRoot, "net/dev"))
+	networkRoot := filepath.Join(collector.options.ProcRoot, "1/net")
+	networkPath := filepath.Join(networkRoot, "dev")
+	if _, statErr := os.Stat(networkPath); statErr != nil {
+		networkRoot = filepath.Join(collector.options.ProcRoot, "net")
+		networkPath = filepath.Join(networkRoot, "dev")
+	}
+	defaultInterface, _ := readDefaultInterface(filepath.Join(networkRoot, "route"))
+	currentNetwork, err := readNetwork(networkPath, defaultInterface)
 	if err == nil {
 		snapshot.Network.ReceivedBytes = currentNetwork.received
 		snapshot.Network.SentBytes = currentNetwork.sent
@@ -424,7 +435,7 @@ func readPressure(path string) (Pressure, error) {
 	return pressure, scanner.Err()
 }
 
-func readNetwork(path string) (networkTotals, error) {
+func readNetwork(path, targetInterface string) (networkTotals, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return networkTotals{}, err
@@ -440,7 +451,7 @@ func readNetwork(path string) (networkTotals, error) {
 		}
 		parts := strings.SplitN(line, ":", 2)
 		iface := strings.TrimSpace(parts[0])
-		if iface == "lo" {
+		if iface == "lo" || (targetInterface != "" && iface != targetInterface) {
 			continue
 		}
 		fields := strings.Fields(parts[1])
@@ -457,6 +468,26 @@ func readNetwork(path string) (networkTotals, error) {
 		}
 	}
 	return totals, scanner.Err()
+}
+
+func readDefaultInterface(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) >= 2 && fields[0] != "Iface" && fields[1] == "00000000" {
+			return fields[0], nil
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return "", errors.New("default network interface not found")
 }
 
 func readCPUUsage(path string) (uint64, error) {

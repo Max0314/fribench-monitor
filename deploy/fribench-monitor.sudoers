@@ -1,4 +1,4 @@
-Cmnd_Alias FRIBENCH_MONITOR_COMPOSE = \
+cpl ALL=(root) NOPASSWD: \
     /usr/bin/docker compose -f /srv/fribench/apps/internal/fribench-monitor/current/compose.yaml config, \
     /usr/bin/docker compose -f /srv/fribench/apps/internal/fribench-monitor/current/compose.yaml build, \
     /usr/bin/docker compose -f /srv/fribench/apps/internal/fribench-monitor/current/compose.yaml up -d, \
@@ -6,5 +6,3 @@ Cmnd_Alias FRIBENCH_MONITOR_COMPOSE = \
     /usr/bin/docker compose -f /srv/fribench/apps/internal/fribench-monitor/current/compose.yaml logs --tail=200, \
     /usr/bin/docker compose -f /srv/fribench/apps/internal/fribench-monitor/current/compose.yaml restart, \
     /usr/bin/docker compose -f /srv/fribench/apps/internal/fribench-monitor/current/compose.yaml down
-
-cpl ALL=(root) NOPASSWD: FRIBENCH_MONITOR_COMPOSE

@@ -28,7 +28,8 @@ func TestLinuxCollectorReadsProcFixtures(t *testing.T) {
 		2_000_000,
 		1_999_732,
 	))
-	writeFixture(t, procRoot, "net/dev", "Inter-| Receive | Transmit\n face |bytes packets errs drop fifo frame compressed multicast|bytes packets errs drop fifo colls carrier compressed\n  lo: 100 0 0 0 0 0 0 0 100 0 0 0 0 0 0 0\neth0: 1000 0 0 0 0 0 0 0 2000 0 0 0 0 0 0 0\n")
+	writeFixture(t, procRoot, "1/net/route", "Iface Destination Gateway Flags RefCnt Use Metric Mask\neth0 00000000 00000000 0003 0 0 100 00000000\n")
+	writeFixture(t, procRoot, "1/net/dev", "Inter-| Receive | Transmit\n face |bytes packets errs drop fifo frame compressed multicast|bytes packets errs drop fifo colls carrier compressed\n  lo: 100 0 0 0 0 0 0 0 100 0 0 0 0 0 0 0\neth0: 1000 0 0 0 0 0 0 0 2000 0 0 0 0 0 0 0\nveth0: 9000 0 0 0 0 0 0 0 9000 0 0 0 0 0 0 0\n")
 
 	collector := NewLinuxCollector(CollectorOptions{
 		ProcRoot:      procRoot,
@@ -59,7 +60,7 @@ func TestLinuxCollectorReadsProcFixtures(t *testing.T) {
 	}
 
 	writeFixture(t, procRoot, "stat", "cpu 150 0 150 900 0 0 0 0 0 0\n")
-	writeFixture(t, procRoot, "net/dev", "Inter-| Receive | Transmit\n face |bytes packets errs drop fifo frame compressed multicast|bytes packets errs drop fifo colls carrier compressed\neth0: 2000 0 0 0 0 0 0 0 2600 0 0 0 0 0 0 0\n")
+	writeFixture(t, procRoot, "1/net/dev", "Inter-| Receive | Transmit\n face |bytes packets errs drop fifo frame compressed multicast|bytes packets errs drop fifo colls carrier compressed\neth0: 2000 0 0 0 0 0 0 0 2600 0 0 0 0 0 0 0\nveth0: 12000 0 0 0 0 0 0 0 13000 0 0 0 0 0 0 0\n")
 	second, err := collector.Collect(context.Background())
 	if err != nil {
 		t.Fatalf("second collection failed: %v", err)
@@ -69,6 +70,35 @@ func TestLinuxCollectorReadsProcFixtures(t *testing.T) {
 	}
 	if second.Network.ReceivedBytes != 2000 || second.Network.SentBytes != 2600 {
 		t.Fatalf("network totals = %+v", second.Network)
+	}
+}
+
+func TestLinuxCollectorUsesHostnameOverride(t *testing.T) {
+	procRoot := t.TempDir()
+	cgroupRoot := t.TempDir()
+
+	writeFixture(t, procRoot, "sys/kernel/hostname", "container-id\n")
+	writeFixture(t, procRoot, "sys/kernel/osrelease", "6.8.0-test\n")
+	writeFixture(t, procRoot, "uptime", "1 0\n")
+	writeFixture(t, procRoot, "loadavg", "0 0 0 1/1 1\n")
+	writeFixture(t, procRoot, "cpuinfo", "processor : 0\n")
+	writeFixture(t, procRoot, "stat", "cpu 1 0 0 1 0 0 0 0 0 0\n")
+	writeFixture(t, procRoot, "meminfo", "MemTotal: 1024 kB\nMemAvailable: 512 kB\n")
+
+	collector := NewLinuxCollector(CollectorOptions{
+		Hostname:      "fribench",
+		ProcRoot:      procRoot,
+		CgroupRoot:    cgroupRoot,
+		RootFSProbe:   procRoot,
+		DockerEnabled: false,
+	})
+
+	snapshot, err := collector.Collect(context.Background())
+	if err != nil {
+		t.Fatalf("collection failed: %v", err)
+	}
+	if snapshot.Hostname != "fribench" {
+		t.Fatalf("hostname = %q, want override", snapshot.Hostname)
 	}
 }
 

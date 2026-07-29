@@ -11,6 +11,7 @@ services:
     init: true
     environment:
       MONITOR_ADDR: ":8080"
+      MONITOR_HOSTNAME: ${MONITOR_HOSTNAME:-fribench}
       MONITOR_PROC_ROOT: /host/proc
       MONITOR_CGROUP_ROOT: /host/cgroup
       MONITOR_ROOTFS_PROBE: /host/rootfs
