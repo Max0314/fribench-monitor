@@ -18,6 +18,7 @@ type Container struct {
 	State   string
 	Status  string
 	Health  string
+	Command string
 	Created time.Time
 }
 
@@ -70,6 +71,7 @@ func (client *Client) Containers(ctx context.Context) ([]Container, error) {
 		Image   string   `json:"Image"`
 		State   string   `json:"State"`
 		Status  string   `json:"Status"`
+		Command string   `json:"Command"`
 		Created int64    `json:"Created"`
 	}
 	if err := json.NewDecoder(io.LimitReader(response.Body, 2<<20)).Decode(&payload); err != nil {
@@ -101,6 +103,7 @@ func (client *Client) Containers(ctx context.Context) ([]Container, error) {
 			State:   item.State,
 			Status:  item.Status,
 			Health:  health,
+			Command: item.Command,
 			Created: time.Unix(item.Created, 0),
 		})
 	}

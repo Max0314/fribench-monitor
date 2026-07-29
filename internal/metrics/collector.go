@@ -187,7 +187,6 @@ func (collector *LinuxCollector) collectContainers(ctx context.Context, now time
 		memoryBytes, _ := readUint(filepath.Join(scope, "memory.current"))
 		pidsValue, _ := readUint(filepath.Join(scope, "pids.current"))
 		cpuUsage, _ := readCPUUsage(filepath.Join(scope, "cpu.stat"))
-		mainProcess := readMainProcess(collector.options.ProcRoot, filepath.Join(scope, "cgroup.procs"))
 
 		container := Container{
 			ID:          shortID(id),
@@ -196,7 +195,6 @@ func (collector *LinuxCollector) collectContainers(ctx context.Context, now time
 			Health:      "running",
 			MemoryBytes: memoryBytes,
 			PIDs:        int(pidsValue),
-			MainProcess: mainProcess,
 		}
 
 		if previous, ok := collector.lastContainerCPU[id]; ok && elapsed > 0 && cpuUsage >= previous {
@@ -210,6 +208,7 @@ func (collector *LinuxCollector) collectContainers(ctx context.Context, now time
 			container.State = metadata.State
 			container.Health = metadata.Health
 			container.Status = metadata.Status
+			container.MainProcess = metadata.Command
 			if !metadata.Created.IsZero() {
 				container.UptimeSeconds = math.Max(0, now.Sub(metadata.Created).Seconds())
 			}
@@ -505,19 +504,6 @@ func readCPUUsage(path string) (uint64, error) {
 		}
 	}
 	return 0, scanner.Err()
-}
-
-func readMainProcess(procRoot, cgroupProcsPath string) string {
-	value, err := readTrimmed(cgroupProcsPath)
-	if err != nil {
-		return ""
-	}
-	fields := strings.Fields(value)
-	if len(fields) == 0 {
-		return ""
-	}
-	process, _ := readTrimmed(filepath.Join(procRoot, fields[0], "comm"))
-	return process
 }
 
 func readUint(path string) (uint64, error) {
