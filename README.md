@@ -121,4 +121,18 @@ ssh -N -L 26001:127.0.0.1:26001 fribench
 
 隧道建立后访问 `http://127.0.0.1:26001`。
 
-本轮只完成本地创建与验证，尚未部署服务器，也未修改 UFW、Nginx 或腾讯云防火墙。
+## Fribench 部署状态
+
+状态：`已验证`
+
+部署日期：`2026-07-29`
+
+- 当前 release：`2b67558`
+- 服务器路径：`/srv/fribench/apps/internal/fribench-monitor`
+- 容器：`fribench-monitor-monitor-1`
+- 回环入口：`127.0.0.1:26001`
+- 公网策略：未配置 Nginx，未修改 UFW 或腾讯云防火墙，仅允许 SSH 隧道访问
+- 运行限制：64 MiB 内存、0.20 CPU、64 PIDs、只读根文件系统、非 root
+- 验收：容器 healthy，`/healthz`、实时 API、桌面和 390×844 手机页面通过
+
+当前通过本地已验证 Git 提交生成 release 包部署，项目尚未创建 GitHub 准源仓库。
