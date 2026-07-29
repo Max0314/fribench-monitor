@@ -90,6 +90,11 @@ getent group docker
 DOCKER_GID=实际GID docker compose up -d --build
 ```
 
+Fribench 服务器当前 Docker 组 GID 为 `988`，Compose 将它作为默认值；迁移到其他宿主机
+时必须重新核对并通过 `DOCKER_GID` 覆盖。`deploy/fribench-monitor.sudoers` 只授权
+`cpl` 对本项目固定 Compose 文件执行构建、启动、状态、日志、重启和停止，不授权任意
+Docker 命令。
+
 ## 访问保护
 
 应用支持可选 HTTP Basic Authentication。密码不写入 Compose 或仓库；生产环境把密码
