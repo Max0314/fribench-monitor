@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"path"
 	"strings"
 	"time"
 )
@@ -103,12 +104,20 @@ func (client *Client) Containers(ctx context.Context) ([]Container, error) {
 			State:   item.State,
 			Status:  item.Status,
 			Health:  health,
-			Command: item.Command,
+			Command: safeCommandName(item.Command),
 			Created: time.Unix(item.Created, 0),
 		})
 	}
 
 	return result, nil
+}
+
+func safeCommandName(command string) string {
+	fields := strings.Fields(command)
+	if len(fields) == 0 {
+		return ""
+	}
+	return path.Base(strings.Trim(fields[0], `"'`))
 }
 
 func shortID(id string) string {
