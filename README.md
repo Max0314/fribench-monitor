@@ -127,7 +127,7 @@ ssh -N -L 26001:127.0.0.1:26001 fribench
 
 部署日期：`2026-07-29`
 
-- 当前 release：`2b67558`
+- 当前 release：`184650d`
 - 服务器路径：`/srv/fribench/apps/internal/fribench-monitor`
 - 容器：`fribench-monitor-monitor-1`
 - 回环入口：`127.0.0.1:26001`
