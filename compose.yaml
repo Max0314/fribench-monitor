@@ -1,0 +1,65 @@
+name: fribench-monitor
+
+services:
+  monitor:
+    image: fribench-monitor:local
+    build:
+      context: .
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
+    restart: unless-stopped
+    init: true
+    environment:
+      MONITOR_ADDR: ":8080"
+      MONITOR_PROC_ROOT: /host/proc
+      MONITOR_CGROUP_ROOT: /host/cgroup
+      MONITOR_ROOTFS_PROBE: /host/rootfs
+      MONITOR_TIMEZONE: ${MONITOR_TIMEZONE:-Asia/Shanghai}
+      MONITOR_SAMPLE_INTERVAL: ${MONITOR_SAMPLE_INTERVAL:-5s}
+      MONITOR_RETENTION: ${MONITOR_RETENTION:-24h}
+      MONITOR_DOCKER_ENABLED: ${MONITOR_DOCKER_ENABLED:-true}
+      MONITOR_DOCKER_SOCKET: /var/run/docker.sock
+      MONITOR_AUTH_USERNAME: ${MONITOR_AUTH_USERNAME:-}
+      MONITOR_AUTH_PASSWORD_FILE: ${MONITOR_AUTH_PASSWORD_FILE:-}
+    ports:
+      - "127.0.0.1:${FRIBENCH_MONITOR_PORT:-26001}:8080"
+    volumes:
+      - type: bind
+        source: /proc
+        target: /host/proc
+        read_only: true
+      - type: bind
+        source: /sys/fs/cgroup
+        target: /host/cgroup
+        read_only: true
+      - type: bind
+        source: ./deploy/host-probe
+        target: /host/rootfs
+        read_only: true
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+    group_add:
+      - "${DOCKER_GID:-999}"
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 64m
+    cpus: 0.20
+    healthcheck:
+      test: ["/fribench-monitor", "healthcheck"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"

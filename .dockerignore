@@ -1,0 +1,10 @@
+.git
+.gitignore
+.idea
+.vscode
+frontend/node_modules
+internal/webui/dist
+bin
+tmp
+*.log
+docs/design

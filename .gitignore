@@ -1,0 +1,21 @@
+# Frontend
+frontend/node_modules/
+internal/webui/dist/*
+!internal/webui/dist/.gitkeep
+
+# Go
+bin/
+coverage.out
+*.test
+
+# Local runtime
+.env
+*.log
+tmp/
+.tools/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
