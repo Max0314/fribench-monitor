@@ -20,8 +20,8 @@ services:
       MONITOR_RETENTION: ${MONITOR_RETENTION:-24h}
       MONITOR_DOCKER_ENABLED: ${MONITOR_DOCKER_ENABLED:-true}
       MONITOR_DOCKER_SOCKET: /var/run/docker.sock
-      MONITOR_AUTH_USERNAME: ${MONITOR_AUTH_USERNAME:-}
-      MONITOR_AUTH_PASSWORD_FILE: ${MONITOR_AUTH_PASSWORD_FILE:-}
+      MONITOR_AUTH_USERNAME: ${MONITOR_AUTH_USERNAME:-monitor}
+      MONITOR_AUTH_PASSWORD_FILE: /run/secrets/fribench-monitor-password
     ports:
       - "127.0.0.1:${FRIBENCH_MONITOR_PORT:-26001}:8080"
     volumes:
@@ -41,8 +41,13 @@ services:
         source: /var/run/docker.sock
         target: /var/run/docker.sock
         read_only: true
+      - type: bind
+        source: ${FRIBENCH_MONITOR_AUTH_PASSWORD_FILE:-/etc/fribench/fribench-monitor/password}
+        target: /run/secrets/fribench-monitor-password
+        read_only: true
     group_add:
       - "${DOCKER_GID:-988}"
+      - "${FRIBENCH_SECRETS_GID:-1999}"
     read_only: true
     tmpfs:
       - /tmp:size=8m,mode=1777

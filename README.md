@@ -63,6 +63,8 @@ curl http://127.0.0.1:26001/healthz
 Compose 默认：
 
 - 只绑定 `127.0.0.1:26001`
+- 从 `/etc/fribench/fribench-monitor/password` 只读挂载生产认证密码
+- 除 `/healthz` 外，页面和 API 都要求用户 `monitor` 通过 HTTP Basic Authentication
 - 每 5 秒采样一次，内存保留 24 小时
 - 只读挂载宿主机 `/proc` 与 cgroup
 - 使用仓库内空探针目录读取根文件系统容量，不挂载宿主机根目录
@@ -97,21 +99,24 @@ Docker 命令。
 
 ## 访问保护
 
-应用支持可选 HTTP Basic Authentication。密码不写入 Compose 或仓库；生产环境把密码
+应用支持 HTTP Basic Authentication。密码不写入 Compose 或仓库；生产环境把密码
 保存为服务器最小权限文件，然后通过只读挂载和以下变量启用：
 
 - `MONITOR_AUTH_USERNAME`
-- `MONITOR_AUTH_PASSWORD_FILE`
+- `FRIBENCH_MONITOR_AUTH_PASSWORD_FILE`：宿主机密码文件，默认
+  `/etc/fribench/fribench-monitor/password`
+- `FRIBENCH_SECRETS_GID`：容器只读访问密码文件所需的宿主机组 GID
 
-`/healthz` 不需要认证，便于容器健康检查。生产环境仍建议由统一 Nginx 入口执行认证和
-限速，并让应用继续只绑定回环端口。
+`/healthz` 不需要认证，便于容器健康检查。生产容器通过宿主机
+`fribench-secrets` 组只读访问密码文件，并继续只绑定回环端口；公网只允许通过统一
+Nginx 精确入口访问。
 
 ## 端口规划
 
 - 容器内部：`8080`
 - 宿主机回环：`26001`
 - 服务器分类：监控和诊断页面
-- 默认访问方式：SSH 隧道，不开放 UFW 或腾讯云公网端口
+- 公网入口：`21002`，由 Nginx 反代到回环端口并保留应用登录保护
 
 服务器私有访问示例：
 
