@@ -33,12 +33,12 @@ read_new_password() {
   local password
 
   [ -r /dev/tty ] || die 'an interactive terminal is required'
-  IFS= read -r -s -p 'New monitor password (20+ characters): ' password </dev/tty
+  IFS= read -r -s -p 'New monitor password: ' password </dev/tty
   /usr/bin/printf '\n' >/dev/tty
   IFS= read -r -s -p 'Confirm new monitor password: ' confirmation </dev/tty
   /usr/bin/printf '\n' >/dev/tty
 
-  [ "${#password}" -ge 20 ] || die 'password must contain at least 20 characters'
+  [ -n "$password" ] || die 'password must not be empty'
   [ "$password" = "$confirmation" ] || die 'password confirmation does not match'
   unset confirmation
   /usr/bin/printf '%s' "$password"
