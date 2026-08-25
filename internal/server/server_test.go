@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -75,6 +76,9 @@ func TestAuthProtectsDashboardButNotHealth(t *testing.T) {
 	handler.ServeHTTP(authorized, request)
 	if authorized.Code != http.StatusOK {
 		t.Fatalf("authorized dashboard response = %d", authorized.Code)
+	}
+	if csp := authorized.Header().Get("Content-Security-Policy"); !strings.Contains(csp, "https://beian.mps.gov.cn") {
+		t.Fatalf("dashboard CSP does not allow the public-security filing badge: %q", csp)
 	}
 }
 
