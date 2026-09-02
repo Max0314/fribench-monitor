@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 
-readonly app_root='/srv/fribench/apps/internal/fribench-monitor'
+readonly app_root='/srv/fribench/ops/services/fribench-monitor'
 readonly ops_root='/srv/fribench/ops'
 readonly current_link="${app_root}/current"
 readonly secret_dir='/etc/fribench/fribench-monitor'

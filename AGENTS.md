@@ -1,6 +1,7 @@
 # AGENTS.md
 
-本仓库继承 `D:\code_CPL\AGENTS.md` 的全部规则。
+本机仓库位于 `G:\Code\fribench\ops\services\fribench-monitor`。另一台电脑的
+`D:\code_CPL` 不是本机路径依据；如本机存在上级 `AGENTS.md`，继续遵守其规则。
 
 ## 项目定位
 

@@ -2,7 +2,7 @@
 set -eu
 
 release_root="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)"
-release_prefix="/srv/fribench/apps/internal/fribench-monitor/releases/"
+release_prefix="/srv/fribench/ops/services/fribench-monitor/releases/"
 sudoers_source="${release_root}/deploy/fribench-monitor.sudoers"
 sudoers_target="/etc/sudoers.d/fribench-monitor"
 

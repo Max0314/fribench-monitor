@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 
-readonly compose_file='/srv/fribench/apps/internal/fribench-monitor/current/compose.yaml'
+readonly compose_file='/srv/fribench/ops/services/fribench-monitor/current/compose.yaml'
 readonly secret_file='/etc/fribench/fribench-monitor/password'
 readonly secret_group='fribench-secrets'
 readonly username='monitor'
