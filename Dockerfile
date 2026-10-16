@@ -9,7 +9,7 @@ RUN --mount=type=cache,id=fribench-monitor-npm,target=/root/.npm,sharing=locked 
 COPY frontend/ ./
 RUN npm run build
 
-FROM golang:1.25.6-alpine AS backend
+FROM golang:1.27.2-alpine AS backend
 WORKDIR /src
 COPY go.mod ./
 COPY cmd/ cmd/
