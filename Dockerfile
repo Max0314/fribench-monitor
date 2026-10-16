@@ -15,6 +15,7 @@ COPY go.mod ./
 COPY cmd/ cmd/
 COPY internal/ internal/
 COPY --from=frontend /src/internal/webui/dist/ internal/webui/dist/
+RUN go test ./... && go vet ./...
 RUN --mount=type=cache,id=fribench-monitor-go-build,target=/root/.cache/go-build,sharing=locked \
     CGO_ENABLED=0 GOOS=linux go build \
       -trimpath \

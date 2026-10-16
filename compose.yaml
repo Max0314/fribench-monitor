@@ -2,13 +2,16 @@ name: fribench-monitor
 
 services:
   monitor:
-    image: fribench-monitor:local
+    image: fribench-monitor:${MONITOR_VERSION:?Set an immutable pushed commit}
     build:
       context: .
       args:
         NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
     restart: unless-stopped
     init: true
+    env_file:
+      - /etc/fribench/apps/fribench-monitor/app.env
+    networks: [identity, edge]
     environment:
       MONITOR_ADDR: ":8080"
       MONITOR_HOSTNAME: ${MONITOR_HOSTNAME:-fribench}
@@ -69,3 +72,11 @@ services:
       options:
         max-size: "5m"
         max-file: "2"
+
+networks:
+  identity:
+    name: fribench-services-edge-v1
+    external: true
+  edge:
+    name: fribench-monitor-edge-v1
+    driver: bridge

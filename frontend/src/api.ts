@@ -42,6 +42,7 @@ export function useMetrics(rangeSeconds: number): MetricsState {
         headers: { Accept: "application/json" },
       });
       if (!response.ok) {
+        if(response.status===401)window.dispatchEvent(new Event('fribench:monitor-denied'));
         throw new Error(`snapshot ${response.status}`);
       }
       const payload = (await response.json()) as SnapshotResponse;

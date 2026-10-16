@@ -175,7 +175,11 @@ func loadAuth(cfg config.Config) (monitorserver.Auth, error) {
 		return monitorserver.Auth{}, errors.New("auth password file is empty")
 	}
 
-	return monitorserver.Auth{Username: cfg.AuthUsername, Password: password}, nil
+	auth := monitorserver.Auth{Username: cfg.AuthUsername, Password: password}
+	if secret := os.Getenv("FRIBENCH_CLIENT_SECRET"); secret != "" {
+		auth.Account = &monitorserver.AccountConfig{Origin: "https://monitor.fribench.cn", Endpoint: os.Getenv("FRIBENCH_IDENTITY_ENDPOINT"), Secret: secret}
+	}
+	return auth, nil
 }
 
 func runHealthcheck() error {

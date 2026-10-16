@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { RANGE_OPTIONS, useMetrics } from "./api";
 import { Header } from "./components/Header";
 import { MetricRail } from "./components/MetricRail";
@@ -17,6 +17,42 @@ function initialRange(): RangeKey {
 }
 
 export default function App() {
+  const [access,setAccess]=useState<{signedIn:boolean;authorized:boolean}|null>(null);
+  const [password,setPassword]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+  const generation=useRef(0);
+  useEffect(()=>{
+    const refresh=()=>{
+      const own=++generation.current;setAccess(null);
+      void fetch('/api/account',{cache:'no-store'}).then(async response=>{
+        if(!response.ok)throw Error('account_unavailable');
+        const value=await response.json();if(own===generation.current)setAccess(value);
+      }).catch(()=>{if(own===generation.current)setMessage('暂时无法验证监控访问权限，请稍后刷新。');});
+    };
+    refresh();window.addEventListener('fribench:account-change',refresh);window.addEventListener('fribench:monitor-denied',refresh);
+    return()=>{generation.current++;window.removeEventListener('fribench:account-change',refresh);window.removeEventListener('fribench:monitor-denied',refresh);};
+  },[]);
+  const link=async(event:FormEvent)=>{
+    event.preventDefault();if(busy)return;setBusy(true);setMessage('');
+    try {
+      const response=await fetch('/api/account/link',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})});
+      if(!response.ok)throw Error(response.status===429?'尝试过于频繁，请稍后再试。':'无法授权。请核对原管理员口令；监控不能改绑到其他账号。');
+      setPassword('');window.dispatchEvent(new Event('fribench:monitor-denied'));
+    }catch(error){setMessage(error instanceof Error?error.message:'无法完成授权。');}finally{setBusy(false);}
+  };
+  if(access?.authorized)return <Dashboard key={generation.current}/>;
+  return <main className="monitor-access">
+    <p>FRIBENCH MONITOR</p><h1>仅限主账号访问</h1>
+    <p>登录不会自动授予服务器监控权限；普通注册账号不能查看指标。</p>
+    {!access?<p role="status">{message||'正在识别已有登录态…'}</p>:!access.signedIn?<a href="/_fribench/auth/login?return_to=%2F">登录 Fribench 账号</a>:<form onSubmit={link}>
+      <p>首次使用原管理员口令授权当前账号。授权后，同一账号无需再次输入此口令；该权限不授予其他账号。</p>
+      <label htmlFor="operator-password">原管理员口令</label><input id="operator-password" type="password" autoComplete="off" maxLength={1024} value={password} onChange={event=>setPassword(event.target.value)}/>
+      <button disabled={!password||busy}>{busy?'验证中':'验证并授权主账号'}</button>
+    </form>}
+    {access&&message?<p role="alert">{message}</p>:null}
+  </main>;
+}
+
+function Dashboard() {
   const [rangeKey, setRangeKey] = useState<RangeKey>(initialRange);
   const range =
     RANGE_OPTIONS.find((option) => option.key === rangeKey) ?? RANGE_OPTIONS[1];

@@ -18,6 +18,7 @@ import (
 type Auth struct {
 	Username string
 	Password string
+	Account  *AccountConfig
 }
 
 type API struct {
@@ -35,17 +36,25 @@ func NewHandler(state *monitor.State, assets fs.FS, auth Auth) (http.Handler, er
 	mux.HandleFunc("GET /healthz", health)
 	mux.HandleFunc("GET /api/snapshot", api.snapshot)
 	mux.HandleFunc("GET /api/history", api.history)
+	mux.HandleFunc("GET /api/account", func(response http.ResponseWriter, _ *http.Request) {
+		writeJSON(response, http.StatusOK, map[string]bool{"signedIn": false, "authorized": true})
+	})
 	mux.Handle("/", static(dist))
 
 	var handler http.Handler = securityHeaders(mux)
-	if auth.Username != "" || auth.Password != "" {
+	if auth.Account != nil {
+		handler, err = accountAuth(handler, auth)
+		if err != nil {
+			return nil, err
+		}
+	} else if auth.Username != "" || auth.Password != "" {
 		if auth.Username == "" || auth.Password == "" {
 			return nil, errors.New("both auth username and password are required")
 		}
 		handler = basicAuth(handler, auth)
 		handler = healthWithoutAuth(handler, mux)
 	}
-	return requestLimits(handler), nil
+	return requestLimits(securityHeaders(handler)), nil
 }
 
 func health(response http.ResponseWriter, _ *http.Request) {
@@ -177,7 +186,7 @@ func healthWithoutAuth(authenticated, original http.Handler) http.Handler {
 
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		response.Header().Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data: https://beian.mps.gov.cn; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
+		response.Header().Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data: https://beian.mps.gov.cn https://auth.fribench.cn; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://auth.fribench.cn; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
 		response.Header().Set("Referrer-Policy", "no-referrer")
 		response.Header().Set("X-Content-Type-Options", "nosniff")
 		response.Header().Set("X-Frame-Options", "DENY")
