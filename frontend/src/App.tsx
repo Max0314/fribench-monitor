@@ -43,6 +43,7 @@ export default function App() {
   return <main className="monitor-access">
     <p>FRIBENCH MONITOR</p><h1>仅限主账号访问</h1>
     <p>登录不会自动授予服务器监控权限；普通注册账号不能查看指标。</p>
+    {access?.signedIn?<a href="/_fribench/auth/manage?return_to=%2F" data-fribench-action="manage">当前账号与安全设置 →</a>:null}
     {!access?<p role="status">{message||'正在识别已有登录态…'}</p>:!access.signedIn?<a href="/_fribench/auth/login?return_to=%2F">登录 Fribench 账号</a>:<form onSubmit={link}>
       <p>首次使用原管理员口令授权当前账号。授权后，同一账号无需再次输入此口令；该权限不授予其他账号。</p>
       <label htmlFor="operator-password">原管理员口令</label><input id="operator-password" type="password" autoComplete="off" maxLength={1024} value={password} onChange={event=>setPassword(event.target.value)}/>

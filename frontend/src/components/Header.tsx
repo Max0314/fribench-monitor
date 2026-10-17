@@ -45,6 +45,7 @@ export function Header({ connection, snapshot }: HeaderProps) {
             {snapshot.source === "demo" ? " · 演示数据" : ""}
           </span>
         ) : null}
+        <a className="portal-link" href="/_fribench/auth/manage?return_to=%2F" data-fribench-action="manage">账号与安全</a>
         <a className="portal-link portal-link--desktop" href={portalURL()}>
           返回门户
         </a>
