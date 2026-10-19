@@ -1,7 +1,8 @@
 # AGENTS.md
 
-本机仓库位于 `G:\Code\fribench\ops\services\fribench-monitor`。另一台电脑的
-`D:\code_CPL` 不是本机路径依据；如本机存在上级 `AGENTS.md`，继续遵守其规则。
+GitHub 准源为 `Max0314/fribench-monitor`，本机路径以当前 Git 工作树为准；
+`G:\Code\fribench\ops\services\fribench-monitor` 是历史开发位置，不作为跨电脑的硬编码依据。
+如当前工作区存在上级 `AGENTS.md`，继续遵守其规则。
 
 ## 项目定位
 

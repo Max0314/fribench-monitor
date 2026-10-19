@@ -64,7 +64,7 @@ Compose 默认：
 
 - 只绑定 `127.0.0.1:26001`
 - 从 `/etc/fribench/fribench-monitor/password` 只读挂载生产认证密码
-- 除 `/healthz` 外，页面和 API 都要求用户 `monitor` 通过 HTTP Basic Authentication
+- `/healthz` 公开；启用统一账号后公开登录外壳与静态资源，指标 API 仍要求所有者授权或原 HTTP Basic 凭据
 - 每 5 秒采样一次，内存保留 24 小时
 - 只读挂载宿主机 `/proc` 与 cgroup
 - 使用仓库内空探针目录读取根文件系统容量，不挂载宿主机根目录
@@ -126,7 +126,8 @@ Nginx 精确入口访问。
 - 容器内部：`8080`
 - 宿主机回环：`26001`
 - 服务器分类：监控和诊断页面
-- 公网入口：`21002`，由 Nginx 反代到回环端口并保留应用登录保护
+- 公网入口：`https://monitor.fribench.cn` 的标准 HTTPS `443`，由 Nginx 反代到回环端口并保留服务端授权
+- 旧公网高位端口 `21002` 已停用；不能与现行相册的回环 `21002` 混淆
 
 服务器私有访问示例：
 
@@ -140,17 +141,17 @@ ssh -N -L 26001:127.0.0.1:26001 fribench
 
 状态：`已验证`
 
-部署日期：`2026-07-29`
+最后核对：`2026-10-19`。本次仅修正文档，未重建监控容器。
 
-目录迁移复核：`2026-09-02`
-
-- 当前 release：`987070a`
-- 服务器路径：`/srv/fribench/ops/services/fribench-monitor`
-- 容器：`fribench-monitor-monitor-1`
+- 当前运行镜像提交：`d8af8c2e145e4e04da00de78b5895c218b330d4c`
+- 运行版本准源：服务器 `/var/lib/fribench/releases/fribench-monitor.json`，不是 README 的文档提交
+- 服务器发布目录：`/srv/fribench/ops/services/fribench-monitor/releases/<完整提交>`
+- Compose 项目：`fribench-monitor`；服务：`monitor`；实际容器名用 `docker compose ps` 查询
 - 回环入口：`127.0.0.1:26001`
-- 公网策略：仅由 `https://monitor.fribench.cn` 的 Nginx 入口反代，保留 HTTP Basic、限流与 `noindex`；旧公网高位端口已退役
+- 公网策略：仅由 HTTPS Nginx 入口反代；登录外壳可公开，真实指标须账号所有者授权或原 HTTP Basic，保留限流与 `noindex`
 - 运行限制：64 MiB 内存、0.20 CPU、64 PIDs、只读根文件系统、非 root
-- 验收：容器 healthy，`/healthz` 通过，公网未认证访问返回 `401`
+- 验收：容器 healthy，`/healthz` 通过，未认证指标 API 拒绝访问；不能再把“首页必须 401”当作统一账号版本的验收标准
 
 GitHub 仓库 `Max0314/fribench-monitor` 是源码准源；服务器保留 release 工作树，
-正式目录分类由 `Max0314/fribench-ops` 维护。
+正式目录分类和发布工具由 `Max0314/fribench_ops` 维护。新公共服务运维入口为
+`/srv/fribench/ops-unified-20261015`，旧 `/srv/fribench/ops` 仍承载共享平台/work，不能整树覆盖。
