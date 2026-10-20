@@ -10,12 +10,7 @@ interface HeaderProps {
 function portalURL(): string {
   const configured = import.meta.env.VITE_PORTAL_URL as string | undefined;
   if (configured) return configured;
-  const url = new URL(window.location.href);
-  url.port = "21000";
-  url.pathname = "/";
-  url.search = "";
-  url.hash = "";
-  return url.toString();
+  return "https://fribench.cn/";
 }
 
 export function Header({ connection, snapshot }: HeaderProps) {
