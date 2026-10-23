@@ -1,3 +1,15 @@
+# Fribench Monitor 开发入口已迁移
+
+2026-10-23：完整 Git 历史、项目与服务页、公共底座页均已迁入私有 [fribench_ops/apps/monitor](https://github.com/Max0314/fribench_ops/tree/main/apps/monitor)。监控与公开门户继续独立构建、独立发布。运行版本以 ops 发布回执为准，访问保护沿用原设置。
+
+本仓库保留历史和回滚来源，不删除或归档远端；后续开发请进入 ops。
+
+---
+
+## 独立仓库时期说明（历史）
+
+以下旧部署命令与路径仅供历史核对，不作为现行发布流程。
+
 # Fribench Monitor
 
 2026-10-20 交互复核：授权入口补返回主页；仪表盘默认返回 `https://fribench.cn/`，不再拼接旧 21000 端口。权限识别增加 8 秒上限、原页重试及旧请求隔离，未改变授权规则或扩大指标可见范围。UI 守卫、类型/构建及 Go test/vet 通过。
